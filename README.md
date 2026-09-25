@@ -76,12 +76,42 @@ rng = random.Random(42)
 generator.generate(rng)
 ```
 
+### Weighted word choice
+
+Sometimes you want some words to come up more often than others. Build a
+bank with `WordBank(words, weights)` directly, or load one from a file
+where each line carries an optional trailing weight:
+
+```
+# nouns.txt
+river 5
+hollow 5
+foundry 1
+```
+
+`foundry` shows up a fifth as often as the other two here. Lines with no
+weight default to 1.0, so a plain word list works with this loader too:
+
+```python
+nouns = WordBank.from_weighted_source("nouns.txt")
+```
+
 ## Word list format
 
 Plain text, one word per line. Blank lines and lines starting with `#`
-are ignored, so files can carry comments.
+are ignored, so files can carry comments. For weighted banks, a line may
+end with a positive number giving that word's weight (`river 5`); a line
+with no trailing number gets a weight of 1.0.
 
 ## Status
 
-Early skeleton: template filling and file/stdin loading work. See the
-roadmap for what's not built yet.
+Early skeleton: template filling, file/stdin loading, and weighted word
+choice work. See the roadmap for what's not built yet.
+
+## Roadmap
+
+- [x] weighted word choice
+- [ ] duplicate-avoidance across generated names
+- [ ] syllable-based generator mode as an alternative to templates
+- [ ] unit tests
+- [ ] optional JSON word list format alongside plain text

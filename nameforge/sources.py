@@ -19,13 +19,42 @@ def read_words(source: Source = None) -> list[str]:
     Blank lines and lines starting with '#' are skipped so word list files
     can carry comments the same way a requirements file would.
     """
+    return list(_source_lines(source))
+
+
+def read_weighted_words(source: Source = None) -> list[tuple[str, float]]:
+    """Read words with optional weights, one per line.
+
+    Each line is either `word` or `word weight`, where weight is a positive
+    number. A line with no weight gets 1.0, so an existing plain word list
+    can be pointed at this function without editing every line.
+    """
+    return [_parse_weight(line) for line in _source_lines(source)]
+
+
+def _parse_weight(line: str) -> tuple[str, float]:
+    word, sep, weight_str = line.rpartition(" ")
+    if not sep:
+        return line, 1.0
+    try:
+        weight = float(weight_str)
+    except ValueError:
+        return line, 1.0
+    if weight <= 0:
+        raise ValueError(f"weight must be positive: {line!r}")
+    return word, weight
+
+
+def _source_lines(source: Source) -> Iterator[str]:
     if source is None or source == "-":
-        return list(_clean_lines(sys.stdin))
+        yield from _clean_lines(sys.stdin)
+        return
     if hasattr(source, "read"):
-        return list(_clean_lines(source))
+        yield from _clean_lines(source)
+        return
     path = Path(source)
     with path.open("r", encoding="utf-8") as handle:
-        return list(_clean_lines(handle))
+        yield from _clean_lines(handle)
 
 
 def _clean_lines(handle: Iterable[str]) -> Iterator[str]:
